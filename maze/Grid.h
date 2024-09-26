@@ -1,12 +1,15 @@
 #pragma once
 #include "Block.h"
+#include <vector>
 
 // grid of blocks
 class Grid
 {
 	unsigned int width, height, size;
 
-	Block* start; // maze always starts at upper-left spot
+	// use vector of block vectors to mimick array
+	// hold series of block object pointers that make up grid
+	std::vector<std::vector<Block*>> grid; // TODO: is there more memory-efficient way to store this?
 
 public:
 	Grid(unsigned int width, unsigned int height);
