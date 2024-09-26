@@ -4,6 +4,12 @@
 // grid of blocks
 class Grid
 {
-	int width, height;
+	unsigned int width, height, size;
+
+	Block* start; // maze always starts at upper-left spot
+
+public:
+	Grid(unsigned int width, unsigned int height);
+	~Grid();
 };
 
