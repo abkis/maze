@@ -1,5 +1,5 @@
 
-#include "Grid.h"
+#include "grid.h"
 #include <stdexcept>
 
 Grid::Grid(unsigned int width, unsigned int height) {
@@ -14,20 +14,22 @@ Grid::Grid(unsigned int width, unsigned int height) {
 	// initial block should not have a wall_left 
 
 	for (unsigned int i = 0; i < height; ++i) {
-		for (unsigned int j = 0; i < width; ++i) {
+		std::vector<Block*> temp;
+		for (unsigned int j = 0; j < width; ++j) {
 			if (i == 0 && j == 0) {
 				// first block
-				grid[i][j] = new Block(false);
+				temp.push_back(new Block(false));
 			}
 			else {
-				grid[i][j] = new Block(); // defaults to "true" for all walls
+				temp.push_back(new Block()); // defaults to "true" for all walls
 			}
 		}
+		grid.push_back(temp);
 	}
 
 	// have blocks, now connect them
 	for (unsigned int i = 0; i < height; ++i) {
-		for (unsigned int j = 0; i < width; ++i) {
+		for (unsigned int j = 0; j < width; ++j) {
 			Block* curr = grid[i][j];
 			if (i > 0) {
 				curr->up = grid[i - 1][j];
@@ -44,3 +46,5 @@ Grid::Grid(unsigned int width, unsigned int height) {
 		}
 	}
 }
+
+std::vector<std::vector<Block*>>& Grid::get_grid() { return grid; }

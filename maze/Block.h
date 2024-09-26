@@ -18,8 +18,7 @@ public:
 
 	bool wall_left{ true }, wall_right{ true }, wall_up{ true }, wall_down{ true };
 
-	Block(bool wall_left=true, bool wall_right=true, bool wall_up=true, bool wall_down=true);
-	Block(bool wall_left = true, bool wall_right = true, bool wall_up = true, bool wall_down = true);
+	Block(bool L=true, bool R=true, bool U=true, bool D=true);
 	~Block();
 
 };

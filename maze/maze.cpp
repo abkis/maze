@@ -1,185 +1,105 @@
-// maze.cpp : Defines the entry point for the application.
-//
+#include <windows.h>
+#include "grid.h"
+#include <iostream>
 
-#include "framework.h"
-#include "maze.h"
-
-#define MAX_LOADSTRING 100
-
-// Global Variables:
-HINSTANCE hInst;                                // current instance
-WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
-WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
-
-// Forward declarations of functions included in this code module:
-ATOM                MyRegisterClass(HINSTANCE hInstance);
-BOOL                InitInstance(HINSTANCE, int);
-LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
-INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
-
-int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
-                     _In_opt_ HINSTANCE hPrevInstance,
-                     _In_ LPWSTR    lpCmdLine,
-                     _In_ int       nCmdShow)
-{
-    UNREFERENCED_PARAMETER(hPrevInstance);
-    UNREFERENCED_PARAMETER(lpCmdLine);
-
-    // TODO: Place code here.
-
-    // Initialize global strings
-    LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
-    LoadStringW(hInstance, IDC_MAZE, szWindowClass, MAX_LOADSTRING);
-    MyRegisterClass(hInstance);
-
-    // Perform application initialization:
-    if (!InitInstance (hInstance, nCmdShow))
-    {
-        return FALSE;
-    }
-
-    HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_MAZE));
-
-    MSG msg;
-
-    // Main message loop:
-    while (GetMessage(&msg, nullptr, 0, 0))
-    {
-        if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
-        {
-            TranslateMessage(&msg);
-            DispatchMessage(&msg);
-        }
-    }
-
-    return (int) msg.wParam;
+void CreateConsole() {
+    AllocConsole();  // Allocates a new console for the calling process
+    FILE* fp;
+    freopen_s(&fp, "CONOUT$", "w", stdout);  // Redirect stdout to the console
+    std::cout.clear();
 }
 
+const int SQUARE_SIZE = 50; // Size of each square in pixels
+const int ROWS = 10;        // Number of rows in the grid
+const int COLS = 10;        // Number of columns in the grid
 
+LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-//
-//  FUNCTION: MyRegisterClass()
-//
-//  PURPOSE: Registers the window class.
-//
-ATOM MyRegisterClass(HINSTANCE hInstance)
-{
-    WNDCLASSEXW wcex;
+int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow) {
+    // Register the window class
+    const wchar_t CLASS_NAME[] = L"GridWindowClass";
+    //CreateConsole();
+    WNDCLASS wc = {};
+    wc.lpfnWndProc = WindowProc;
+    wc.hInstance = hInstance;
+    wc.lpszClassName = CLASS_NAME;
 
-    wcex.cbSize = sizeof(WNDCLASSEX);
+    RegisterClass(&wc);
 
-    wcex.style          = CS_HREDRAW | CS_VREDRAW;
-    wcex.lpfnWndProc    = WndProc;
-    wcex.cbClsExtra     = 0;
-    wcex.cbWndExtra     = 0;
-    wcex.hInstance      = hInstance;
-    wcex.hIcon          = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_MAZE));
-    wcex.hCursor        = LoadCursor(nullptr, IDC_ARROW);
-    wcex.hbrBackground  = (HBRUSH)(COLOR_WINDOW+1);
-    wcex.lpszMenuName   = MAKEINTRESOURCEW(IDC_MAZE);
-    wcex.lpszClassName  = szWindowClass;
-    wcex.hIconSm        = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
+    // Create the window
+    HWND hwnd = CreateWindowEx(
+        0,
+        CLASS_NAME,
+        L"Grid Window",
+        WS_OVERLAPPEDWINDOW,
+        CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
+        nullptr, nullptr, hInstance, nullptr);
 
-    return RegisterClassExW(&wcex);
-}
-
-//
-//   FUNCTION: InitInstance(HINSTANCE, int)
-//
-//   PURPOSE: Saves instance handle and creates main window
-//
-//   COMMENTS:
-//
-//        In this function, we save the instance handle in a global variable and
-//        create and display the main program window.
-//
-BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
-{
-   hInst = hInstance; // Store instance handle in our global variable
-
-   HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
-      CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
-
-   if (!hWnd)
-   {
-      return FALSE;
-   }
-
-   ShowWindow(hWnd, nCmdShow);
-   UpdateWindow(hWnd);
-
-   return TRUE;
-}
-
-//
-//  FUNCTION: WndProc(HWND, UINT, WPARAM, LPARAM)
-//
-//  PURPOSE: Processes messages for the main window.
-//
-//  WM_COMMAND  - process the application menu
-//  WM_PAINT    - Paint the main window
-//  WM_DESTROY  - post a quit message and return
-//
-//
-LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
-    switch (message)
-    {
-    case WM_COMMAND:
-        {
-            int wmId = LOWORD(wParam);
-            // Parse the menu selections:
-            switch (wmId)
-            {
-            case IDM_ABOUT:
-                DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
-                break;
-            case IDM_EXIT:
-                DestroyWindow(hWnd);
-                break;
-            default:
-                return DefWindowProc(hWnd, message, wParam, lParam);
-            }
-        }
-        break;
-    case WM_PAINT:
-        {
-            PAINTSTRUCT ps;
-            HDC hdc = BeginPaint(hWnd, &ps);
-            // Set the text you want to display
-            const wchar_t* text = L"Hello, World!";
-
-            // Display the text at coordinates (50, 50)
-            TextOut(hdc, 50, 50, text, lstrlenW(text)); 
-            SetPixel(hdc, 49, 50, RGB(255, 0, 0));  // Red pixel at (100, 100)
-            EndPaint(hWnd, &ps);
-        }
-        break;
-    case WM_DESTROY:
-        PostQuitMessage(0);
-        break;
-    default:
-        return DefWindowProc(hWnd, message, wParam, lParam);
+    if (hwnd == nullptr) {
+        return 0;
     }
+
+    ShowWindow(hwnd, nCmdShow);
+
+    // Run the message loop
+    MSG msg = {};
+    while (GetMessage(&msg, nullptr, 0, 0)) {
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
+    }
+
     return 0;
 }
 
-// Message handler for about box.
-INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
-{
-    UNREFERENCED_PARAMETER(lParam);
-    switch (message)
-    {
-    case WM_INITDIALOG:
-        return (INT_PTR)TRUE;
+LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+    switch (uMsg) {
+    case WM_PAINT: {
+        PAINTSTRUCT ps;
+        HDC hdc = BeginPaint(hwnd, &ps);
 
-    case WM_COMMAND:
-        if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
-        {
-            EndDialog(hDlg, LOWORD(wParam));
-            return (INT_PTR)TRUE;
+        // Create brushes for black and white
+        HBRUSH blackBrush = CreateSolidBrush(RGB(0, 0, 0));
+        HBRUSH whiteBrush = CreateSolidBrush(RGB(255, 255, 255));
+        HBRUSH redBrush = CreateSolidBrush(RGB(255, 0, 0));
+
+        // Set up custom grid
+        Grid grid = Grid(ROWS, COLS);
+
+        // Draw the grid of alternating black and white squares
+        for (int row = 0; row < ROWS; ++row) {
+            for (int col = 0; col < COLS; ++col) {
+                // Determine the rectangle for each square
+                RECT rect;
+                rect.left = col * SQUARE_SIZE;
+                rect.top = row * SQUARE_SIZE;
+                rect.right = rect.left + SQUARE_SIZE;
+                rect.bottom = rect.top + SQUARE_SIZE;
+
+                Block* curr = grid.get_grid()[row][col];
+
+                // Choose black or white based on the row and column indices
+                HBRUSH brush = ((row + col) % 2 == 0) ? blackBrush : whiteBrush;
+                // unless have at least one open wall
+                if (!(curr->wall_down && curr->wall_left && curr->wall_right && curr->wall_up)) {
+                    brush = redBrush;
+                }
+                FillRect(hdc, &rect, brush);
+            }
         }
-        break;
+
+        // Cleanup brushes
+        DeleteObject(blackBrush);
+        DeleteObject(whiteBrush);
+
+        EndPaint(hwnd, &ps);
     }
-    return (INT_PTR)FALSE;
+                 return 0;
+
+    case WM_DESTROY:
+        PostQuitMessage(0);
+        return 0;
+
+    default:
+        return DefWindowProc(hwnd, uMsg, wParam, lParam);
+    }
 }

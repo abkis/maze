@@ -1,5 +1,5 @@
 #pragma once
-#include "Block.h"
+#include "block.h"
 #include <vector>
 
 // grid of blocks
@@ -13,6 +13,7 @@ class Grid
 
 public:
 	Grid(unsigned int width, unsigned int height);
-	~Grid();
+
+	std::vector<std::vector<Block*>>& get_grid();
 };
 
