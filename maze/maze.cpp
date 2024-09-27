@@ -64,6 +64,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
         // Set up custom grid
         Grid grid = Grid(ROWS, COLS);
+        grid.make_maze();
 
         // Draw the grid of alternating black and white squares
         for (int row = 0; row < ROWS; ++row) {
@@ -75,14 +76,19 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
                 rect.right = rect.left + SQUARE_SIZE;
                 rect.bottom = rect.top + SQUARE_SIZE;
 
-                Block* curr = grid.get_grid()[row][col];
+                std::weak_ptr<Block> curr = grid[row][col];
 
                 // Choose black or white based on the row and column indices
                 HBRUSH brush = ((row + col) % 2 == 0) ? blackBrush : whiteBrush;
+
                 // unless have at least one open wall
-                if (!(curr->wall_down && curr->wall_left && curr->wall_right && curr->wall_up)) {
-                    brush = redBrush;
+                for (auto wall : curr.lock()->walls) {
+                    if (!wall) {
+                        brush = redBrush;
+                        break;
+                    }
                 }
+
                 FillRect(hdc, &rect, brush);
             }
         }
