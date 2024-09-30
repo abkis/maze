@@ -70,44 +70,55 @@ void Grid::make_maze() {
 	int col{ rand() % width }, row{ rand() % height };
 
 	std::weak_ptr<Block> curr = grid[row][col];
+	curr.lock()->in_maze = true; // mark as seen
 
-	if (curr.lock() || curr.lock()->in_maze) {
-		// already seen
-		// TODO: now what
-	}
+	// add to stack 
+	stack.push_back(curr);
 
-	std::vector<size_t> indices; // possible indices of nbr vec we can move to
+	// repeat process while stack is nonempty
+	while (!stack.empty()) {
 
+		// grab current item
+		curr = stack.back();
+		stack.pop_back(); // remove last item from stack
 
-	for (size_t i = 0; i < curr.lock()->neighbors.size(); ++i) {
-		if (curr.lock()->neighbors[i].lock()) {
-			// make sure ptr has been assigned/is not expired
-			indices.push_back(i);
+		std::vector<size_t> indices; // possible indices of nbr vec we can move to
+
+		// only allow random choice from non-visited neighbors
+		for (size_t i = 0; i < curr.lock()->neighbors.size(); ++i) {
+			auto nbr = curr.lock()->neighbors[i];
+			if (nbr.lock() && !nbr.lock()->in_maze) {
+				// make sure ptr has been assigned/is not expired
+				indices.push_back(i);
+			}
 		}
+
+		if (indices.empty()) {
+			// no non-visited neighbors
+			continue;
+		}
+
+		unsigned int index{ rand() % indices.size() }; //  index of next item to add to "seen" stack
+
+		// grab next item to add to maze
+		size_t nbr_index = indices[index];
+		std::weak_ptr<Block> next = curr.lock()->neighbors[nbr_index];
+
+		// remove wall bw curr and next, mark as seen, add to stack
+		curr.lock()->walls[nbr_index] = false; // remove wall curr -> next
+		curr.lock()->in_maze = true; // added to maze
+		stack.push_back(curr); // update stack
+
+		// need to remove wall next -> curr as well!
+		// note: up <=> down & left <=> right when translated
+		int mapping[] = { 1, 0, 3, 2 };
+		int next_nbr_index = mapping[nbr_index];
+
+		next.lock()->walls[next_nbr_index] = false;
+		next.lock()->in_maze = true;
+		stack.push_back(next);
 	}
 
-	unsigned int index{ rand() % indices.size() }; //  index of next item to add to "seen" stack
 
-	// grab next item to add to maze
-	size_t nbr_index = indices[index];
-	std::weak_ptr<Block> next = curr.lock()->neighbors[nbr_index];
-
-	if (next.lock()->neighbors[indices[index]].lock()->in_maze) {
-		// alrady seen
-	}
-
-	// otherwise have not seen it, so remove wall bw curr and next, mark as seen, add to stack
-	curr.lock()->walls[nbr_index] = false; // remove wall curr -> next
-	curr.lock()->in_maze = true; // added to maze
-	stack.push_back(curr); // update stack
-
-	// neet to remove wall next -> curr as well!
-	// note: up <=> down & left <=> right when translated
-	int mapping[] = { 1, 0, 3, 2 };
-	int next_nbr_index = mapping[nbr_index];
-
-	next.lock()->walls[next_nbr_index] = false;
-	next.lock()->in_maze = true;
-	stack.push_back(next);
 
 }

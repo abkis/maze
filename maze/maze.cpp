@@ -2,6 +2,8 @@
 #include "grid.h"
 #include <iostream>
 
+#define WALL_THICKNESS 3
+
 void CreateConsole() {
     AllocConsole();  // Allocates a new console for the calling process
     FILE* fp;
@@ -53,6 +55,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     switch (uMsg) {
+
     case WM_PAINT: {
         PAINTSTRUCT ps;
         HDC hdc = BeginPaint(hwnd, &ps);
@@ -60,13 +63,12 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
         // Create brushes for black and white
         HBRUSH blackBrush = CreateSolidBrush(RGB(0, 0, 0));
         HBRUSH whiteBrush = CreateSolidBrush(RGB(255, 255, 255));
-        HBRUSH redBrush = CreateSolidBrush(RGB(255, 0, 0));
 
         // Set up custom grid
         Grid grid = Grid(ROWS, COLS);
         grid.make_maze();
 
-        // Draw the grid of alternating black and white squares
+        // Draw the grid of squares with walls
         for (int row = 0; row < ROWS; ++row) {
             for (int col = 0; col < COLS; ++col) {
                 // Determine the rectangle for each square
@@ -78,34 +80,45 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
                 std::weak_ptr<Block> curr = grid[row][col];
 
-                // Choose black or white based on the row and column indices
-                HBRUSH brush = ((row + col) % 2 == 0) ? blackBrush : whiteBrush;
+                // Fill the square with white color
+                FillRect(hdc, &rect, whiteBrush);
 
-                // unless have at least one open wall
-                for (auto wall : curr.lock()->walls) {
-                    if (!wall) {
-                        brush = redBrush;
-                        break;
+                // Draw black lines where there are walls
+                std::shared_ptr<Block> block = curr.lock();
+                if (block) {
+                    // Get the coordinates for the square's edges
+                    int left = rect.left;
+                    int right = rect.right;
+                    int top = rect.top;
+                    int bottom = rect.bottom;
+
+                    // Check each wall and draw a black line if the wall exists
+                    if (block->walls[0]) { // Top wall
+                        RECT topWall = { left, top, right, top + WALL_THICKNESS };
+                        FillRect(hdc, &topWall, blackBrush);
+                    }
+                    if (block->walls[1]) { // Bottom wall
+                        RECT bottomWall = { left, bottom - WALL_THICKNESS, right, bottom };
+                        FillRect(hdc, &bottomWall, blackBrush);
+                    }
+                    if (block->walls[2]) { // Left wall
+                        RECT leftWall = { left, top, left + WALL_THICKNESS, bottom };
+                        FillRect(hdc, &leftWall, blackBrush);
+                    }
+                    if (block->walls[3]) { // Right wall
+                        RECT rightWall = { right - WALL_THICKNESS, top, right, bottom };
+                        FillRect(hdc, &rightWall, blackBrush);
                     }
                 }
-
-                FillRect(hdc, &rect, brush);
             }
         }
 
-        // Cleanup brushes
+        // Cleanup
         DeleteObject(blackBrush);
         DeleteObject(whiteBrush);
 
         EndPaint(hwnd, &ps);
+        break;
     }
-                 return 0;
 
-    case WM_DESTROY:
-        PostQuitMessage(0);
-        return 0;
-
-    default:
-        return DefWindowProc(hwnd, uMsg, wParam, lParam);
-    }
 }
