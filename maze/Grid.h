@@ -3,12 +3,21 @@
 #include <vector>
 #include "memory"
 
+// enumerate directions for easier indexing
+enum DIR {
+	UP = 0,
+	DOWN = 1,
+	LEFT = 2,
+	RIGHT = 3
+};
+
 // grid of blocks
 class Grid
 {
 	// width == columns, height == rows
 	int width, height, size;
 
+	std::weak_ptr<Block> start, end; // track where to enter/exit maze
 
 	// use vector of block vectors to mimick array
 	// hold series of block object pointers that make up grid

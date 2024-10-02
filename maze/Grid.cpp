@@ -111,7 +111,7 @@ void Grid::make_maze() {
 
 		// need to remove wall next -> curr as well!
 		// note: up <=> down & left <=> right when translated
-		int mapping[] = { 1, 0, 3, 2 };
+		int mapping[] = { DOWN, UP, RIGHT, LEFT };
 		int next_nbr_index = mapping[nbr_index];
 
 		next.lock()->walls[next_nbr_index] = false;
@@ -119,6 +119,15 @@ void Grid::make_maze() {
 		stack.push_back(next);
 	}
 
+	// start should be top leftmost & end is bottom rightmost
+	start = grid[0][0];
+	end = grid[height-1][width-1];
 
+	// make sure no walls
+	start.lock()->walls[LEFT] = false;
+	start.lock()->is_start = true;
+
+	end.lock()->walls[DOWN] = false;
+	end.lock()->is_end = true;
 
 }

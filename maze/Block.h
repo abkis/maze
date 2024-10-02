@@ -15,6 +15,8 @@ public:
 	std::vector<std::weak_ptr<Block>> neighbors;
 
 	bool in_maze{ false }; // set to true if maze generation algo has already seen it
+	bool is_end{ false }; // set to true => final spot
+	bool is_start{ false }; // set to true => maze  start
 
 	// has zero to four walls
 	std::vector<bool> walls;

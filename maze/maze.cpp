@@ -63,6 +63,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
         // Create brushes for black and white
         HBRUSH blackBrush = CreateSolidBrush(RGB(0, 0, 0));
         HBRUSH whiteBrush = CreateSolidBrush(RGB(255, 255, 255));
+        HBRUSH redBrush = CreateSolidBrush(RGB(255, 0, 0));
 
         // Set up custom grid
         Grid grid = Grid(ROWS, COLS);
@@ -93,21 +94,31 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
                     int bottom = rect.bottom;
 
                     // Check each wall and draw a black line if the wall exists
-                    if (block->walls[0]) { // Top wall
+                    if (block->walls[UP]) { // Top wall
                         RECT topWall = { left, top, right, top + WALL_THICKNESS };
                         FillRect(hdc, &topWall, blackBrush);
                     }
-                    if (block->walls[1]) { // Bottom wall
+                    if (block->walls[DOWN]) { // Bottom wall
                         RECT bottomWall = { left, bottom - WALL_THICKNESS, right, bottom };
                         FillRect(hdc, &bottomWall, blackBrush);
                     }
-                    if (block->walls[2]) { // Left wall
+                    if (block->walls[LEFT]) { // Left wall
                         RECT leftWall = { left, top, left + WALL_THICKNESS, bottom };
                         FillRect(hdc, &leftWall, blackBrush);
                     }
-                    if (block->walls[3]) { // Right wall
+                    if (block->walls[RIGHT]) { // Right wall
                         RECT rightWall = { right - WALL_THICKNESS, top, right, bottom };
                         FillRect(hdc, &rightWall, blackBrush);
+                    }
+
+                    if (block->is_end) {
+                        RECT bottomWall = { left, bottom - WALL_THICKNESS, right, bottom };
+                        FillRect(hdc, &bottomWall, redBrush);
+                    }
+
+                    if (block->is_start) {
+                        RECT leftWall = { left, top, left + WALL_THICKNESS, bottom };
+                        FillRect(hdc, &leftWall, redBrush);
                     }
                 }
             }
