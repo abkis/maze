@@ -111,7 +111,6 @@ void Grid::make_maze() {
 
 		// need to remove wall next -> curr as well!
 		// note: up <=> down & left <=> right when translated
-		int mapping[] = { DOWN, UP, RIGHT, LEFT };
 		int next_nbr_index = mapping[nbr_index];
 
 		next.lock()->walls[next_nbr_index] = false;
@@ -130,4 +129,32 @@ void Grid::make_maze() {
 	end.lock()->walls[DOWN] = false;
 	end.lock()->is_end = true;
 
+}
+
+void Grid::remove_walls(unsigned int remove) {
+	unsigned int removed{ 0 }; // counter
+	int max_it{ 0}; // make sure don't enter infinite loop
+
+	while (removed < remove && max_it < size) {
+		// get random val to determine which block to look at 
+		int col{ rand() % (width - 1) + 1 }, row{ rand() % (height-1)+1 };
+		std::weak_ptr<Block> block = grid[row][col];
+
+		// get random value to determine which wall to remove
+		unsigned int wall{ rand() %  block.lock()->walls.size()};
+
+		if (block.lock()->walls[wall]) {
+			block.lock()->walls[wall] = false;
+
+			// need to remove neighbor's wall as well
+			int nbr_wall = mapping[wall];
+			std::weak_ptr<Block> neighbor = block.lock()->neighbors[wall];
+			if (neighbor.lock()) {
+				neighbor.lock()->walls[nbr_wall] = false;
+			}
+
+			++removed;
+		}
+		++max_it;
+	}
 }

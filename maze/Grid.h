@@ -17,6 +17,8 @@ class Grid
 	// width == columns, height == rows
 	int width, height, size;
 
+	int mapping[4] = { DOWN, UP, RIGHT, LEFT };
+
 	std::weak_ptr<Block> start, end; // track where to enter/exit maze
 
 	// use vector of block vectors to mimick array
@@ -27,6 +29,8 @@ public:
 	Grid(int width, int height);
 
 	void make_maze(); // randomized depth-first search maze generation algo
+
+	void remove_walls(unsigned int remove); // remove this number of random walls from maze
 
 	// Overload operator[] to return a reference to grid
 	std::vector<std::shared_ptr<Block>>& operator[](size_t row) {

@@ -18,6 +18,8 @@ public:
 	bool is_end{ false }; // set to true => final spot
 	bool is_start{ false }; // set to true => maze  start
 
+	int weight{ 0 }; // random number, acts as incentive so path finding also takes into account reward
+
 	// has zero to four walls
 	std::vector<bool> walls;
 

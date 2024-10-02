@@ -68,6 +68,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
         // Set up custom grid
         Grid grid = Grid(ROWS, COLS);
         grid.make_maze();
+        grid.remove_walls(20);
 
         // Draw the grid of squares with walls
         for (int row = 0; row < ROWS; ++row) {
