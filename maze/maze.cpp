@@ -11,9 +11,9 @@ void CreateConsole() {
     std::cout.clear();
 }
 
-const int SQUARE_SIZE = 50; // Size of each square in pixels
-const int ROWS = 10;        // Number of rows in the grid
-const int COLS = 10;        // Number of columns in the grid
+const int SQUARE_SIZE = 20; // Size of each square in pixels
+const int ROWS = 20;        // Number of rows in the grid
+const int COLS = 20;        // Number of columns in the grid
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
@@ -118,7 +118,14 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
         DeleteObject(whiteBrush);
 
         EndPaint(hwnd, &ps);
-        break;
+        return 0;
+    }
+
+    case WM_DESTROY:
+        PostQuitMessage(0);
+        return 0;
+    default:
+        return DefWindowProc(hwnd, uMsg, wParam, lParam);
     }
 
 }
