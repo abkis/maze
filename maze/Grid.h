@@ -26,9 +26,9 @@ class Grid
 	std::vector<std::vector<std::shared_ptr<Block>>> grid; // TODO: is there more memory-efficient way to store this?
 
 public:
-	Grid(int width, int height);
+	Grid(int width, int height, unsigned int max_weight);
 
-	void make_maze(); // randomized depth-first search maze generation algo
+	void make_maze(unsigned int end_weight); // randomized depth-first search maze generation algo
 
 	void remove_walls(unsigned int remove); // remove this number of random walls from maze
 

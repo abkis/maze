@@ -23,7 +23,7 @@ public:
 	// has zero to four walls
 	std::vector<bool> walls;
 
-	Block(bool U=true, bool D=true, bool L = true, bool R = true);
+	Block(int weight=0, bool U=true, bool D=true, bool L = true, bool R = true);
 
 };
 

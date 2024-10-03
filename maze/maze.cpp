@@ -1,8 +1,8 @@
 #include <windows.h>
 #include "grid.h"
+#include "maze.h"
 #include <iostream>
-
-#define WALL_THICKNESS 3
+#include <string>
 
 void CreateConsole() {
     AllocConsole();  // Allocates a new console for the calling process
@@ -10,10 +10,6 @@ void CreateConsole() {
     freopen_s(&fp, "CONOUT$", "w", stdout);  // Redirect stdout to the console
     std::cout.clear();
 }
-
-const int SQUARE_SIZE = 20; // Size of each square in pixels
-const int ROWS = 20;        // Number of rows in the grid
-const int COLS = 20;        // Number of columns in the grid
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
@@ -66,9 +62,9 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
         HBRUSH redBrush = CreateSolidBrush(RGB(255, 0, 0));
 
         // Set up custom grid
-        Grid grid = Grid(ROWS, COLS);
-        grid.make_maze();
-        grid.remove_walls(20);
+        Grid grid = Grid(ROWS, COLS, MAX_WEIGHT);
+        grid.make_maze(END_WEIGHT);
+        grid.remove_walls(REMOVE_WALLS);
 
         // Draw the grid of squares with walls
         for (int row = 0; row < ROWS; ++row) {
@@ -88,6 +84,13 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
                 // Draw black lines where there are walls
                 std::shared_ptr<Block> block = curr.lock();
                 if (block) {
+                    // shade depending on weight, can't be negative ofc
+                    // Convert integer to wide string
+                    std::wstring numStr = std::to_wstring(block->weight);
+
+                    // Draw the number as text in the center of the block
+                    DrawText(hdc, numStr.c_str(), -1, &rect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+
                     // Get the coordinates for the square's edges
                     int left = rect.left;
                     int right = rect.right;

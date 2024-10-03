@@ -3,7 +3,7 @@
 #include <stdexcept>
 #include <stdlib.h>
 
-Grid::Grid(int width, int height) {
+Grid::Grid(int width, int height, unsigned int max_weight) {
 	if (width <= 0 || height <= 0) {
 		throw std::invalid_argument("Cannot have grid of zero or negative size");
 	}
@@ -17,7 +17,8 @@ Grid::Grid(int width, int height) {
 	for (int i = 0; i < height; ++i) {
 		std::vector<std::shared_ptr<Block>> temp;
 		for (int j = 0; j < width; ++j) {
-			temp.push_back(std::make_shared<Block>()); // defaults to "true" for all walls
+			int weight{ rand() % (2 * (int)max_weight) - (int)max_weight };
+			temp.push_back(std::make_shared<Block>(weight)); // defaults to "true" for all walls
 		}
 		grid.push_back(temp);
 	}
@@ -62,7 +63,7 @@ Grid::Grid(int width, int height) {
 }
 
 
-void Grid::make_maze() {
+void Grid::make_maze(unsigned int end_weight) {
 
 	std::vector<std::weak_ptr<Block>> stack; // add visited nodes here so can easily backtrack
 
@@ -125,9 +126,13 @@ void Grid::make_maze() {
 	// make sure no walls
 	start.lock()->walls[LEFT] = false;
 	start.lock()->is_start = true;
+	// make sure start has no weight
+	start.lock()->weight = 0;
 
 	end.lock()->walls[DOWN] = false;
 	end.lock()->is_end = true;
+	// make sure end has specified end weight
+	end.lock()->weight = end_weight;
 
 }
 
