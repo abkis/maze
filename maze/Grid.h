@@ -28,6 +28,9 @@ class Grid
 public:
 	Grid(int width, int height, unsigned int max_weight);
 
+	std::shared_ptr<Block> get_start();
+	std::shared_ptr<Block> get_end();
+
 	void make_maze(unsigned int end_weight); // randomized depth-first search maze generation algo
 
 	void remove_walls(unsigned int remove); // remove this number of random walls from maze

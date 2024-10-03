@@ -3,6 +3,7 @@
 #include "maze.h"
 #include <iostream>
 #include <string>
+#include "robot.h"
 
 void CreateConsole() {
     AllocConsole();  // Allocates a new console for the calling process
@@ -10,6 +11,10 @@ void CreateConsole() {
     freopen_s(&fp, "CONOUT$", "w", stdout);  // Redirect stdout to the console
     std::cout.clear();
 }
+
+// bitmaps for maze
+HBITMAP hMazeBitmap = nullptr;
+HDC hdcMaze = nullptr;
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
@@ -50,7 +55,30 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 }
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+    // Set up custom grid
+    Grid grid = Grid(ROWS, COLS, MAX_WEIGHT);
+    grid.make_maze(END_WEIGHT);
+    grid.remove_walls(REMOVE_WALLS);
+
+    // create display
+    std::shared_ptr<Display> display{ std::make_shared<Display>((HWND)GetForegroundWindow(), CreateSolidBrush(RGB(255, 0, 0))) };
+    
+    // create robot
+    Robot robot{ grid.get_start(), grid.get_end(), display};
+
     switch (uMsg) {
+
+    case WM_CREATE: {
+        // create maze here & store so don't re-render each time
+        HDC hdc = GetDC(hwnd);
+
+        // Create a memory device context for the maze
+        hdcMaze = CreateCompatibleDC(hdc);
+        hMazeBitmap = CreateCompatibleBitmap(hdc, windowWidth, windowHeight);
+        SelectObject(hdcMaze, hMazeBitmap);
+
+
+    }
 
     case WM_PAINT: {
         PAINTSTRUCT ps;
@@ -60,11 +88,6 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
         HBRUSH blackBrush = CreateSolidBrush(RGB(0, 0, 0));
         HBRUSH whiteBrush = CreateSolidBrush(RGB(255, 255, 255));
         HBRUSH redBrush = CreateSolidBrush(RGB(255, 0, 0));
-
-        // Set up custom grid
-        Grid grid = Grid(ROWS, COLS, MAX_WEIGHT);
-        grid.make_maze(END_WEIGHT);
-        grid.remove_walls(REMOVE_WALLS);
 
         // Draw the grid of squares with walls
         for (int row = 0; row < ROWS; ++row) {
@@ -127,6 +150,9 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
                 }
             }
         }
+
+        // move robot
+        robot.search();
 
         // Cleanup
         DeleteObject(blackBrush);

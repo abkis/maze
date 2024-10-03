@@ -128,16 +128,20 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Block.h" />
+    <ClInclude Include="display.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Grid.h" />
     <ClInclude Include="maze.h" />
+    <ClInclude Include="robot.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Block.cpp" />
+    <ClCompile Include="display.cpp" />
     <ClCompile Include="Grid.cpp" />
     <ClCompile Include="maze.cpp" />
+    <ClCompile Include="robot.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="maze.rc" />

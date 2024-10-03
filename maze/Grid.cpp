@@ -163,3 +163,6 @@ void Grid::remove_walls(unsigned int remove) {
 		++max_it;
 	}
 }
+
+std::shared_ptr<Block> Grid::get_start() { return start.lock(); }
+std::shared_ptr<Block> Grid::get_end() { return end.lock(); }
