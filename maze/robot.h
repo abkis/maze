@@ -16,5 +16,7 @@ public:
 	Robot(std::shared_ptr<Block> start, std::shared_ptr<Block> end, std::shared_ptr<Display> display);
 
 	void search();
+
+	RECT get_rect() const; // return rect obj of location of robot 
 };
 

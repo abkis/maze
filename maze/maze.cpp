@@ -66,24 +66,23 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
     // create robot
     Robot robot{ grid.get_start(), grid.get_end(), display};
 
+    // Get window dimensions
+    RECT clientRect;
+    GetClientRect(hwnd, &clientRect);
+    int windowWidth = COLS * SQUARE_SIZE;// clientRect.right - clientRect.left;
+    int windowHeight = COLS * SQUARE_SIZE; // clientRect.bottom - clientRect.top;
+
     switch (uMsg) {
 
     case WM_CREATE: {
-        // create maze here & store so don't re-render each time
         HDC hdc = GetDC(hwnd);
 
-        // Create a memory device context for the maze
+        // Create a memory device context and compatible bitmap for the maze
         hdcMaze = CreateCompatibleDC(hdc);
         hMazeBitmap = CreateCompatibleBitmap(hdc, windowWidth, windowHeight);
         SelectObject(hdcMaze, hMazeBitmap);
 
-
-    }
-
-    case WM_PAINT: {
-        PAINTSTRUCT ps;
-        HDC hdc = BeginPaint(hwnd, &ps);
-
+        // draw grid
         // Create brushes for black and white
         HBRUSH blackBrush = CreateSolidBrush(RGB(0, 0, 0));
         HBRUSH whiteBrush = CreateSolidBrush(RGB(255, 255, 255));
@@ -100,9 +99,10 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
                 rect.bottom = rect.top + SQUARE_SIZE;
 
                 std::weak_ptr<Block> curr = grid[row][col];
+                curr.lock()->location = rect;
 
                 // Fill the square with white color
-                FillRect(hdc, &rect, whiteBrush);
+                FillRect(hdcMaze, &rect, whiteBrush);
 
                 // Draw black lines where there are walls
                 std::shared_ptr<Block> block = curr.lock();
@@ -112,7 +112,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
                     std::wstring numStr = std::to_wstring(block->weight);
 
                     // Draw the number as text in the center of the block
-                    DrawText(hdc, numStr.c_str(), -1, &rect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+                    DrawText(hdcMaze, numStr.c_str(), -1, &rect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 
                     // Get the coordinates for the square's edges
                     int left = rect.left;
@@ -123,41 +123,55 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
                     // Check each wall and draw a black line if the wall exists
                     if (block->walls[UP]) { // Top wall
                         RECT topWall = { left, top, right, top + WALL_THICKNESS };
-                        FillRect(hdc, &topWall, blackBrush);
+                        FillRect(hdcMaze, &topWall, blackBrush);
                     }
                     if (block->walls[DOWN]) { // Bottom wall
                         RECT bottomWall = { left, bottom - WALL_THICKNESS, right, bottom };
-                        FillRect(hdc, &bottomWall, blackBrush);
+                        FillRect(hdcMaze, &bottomWall, blackBrush);
                     }
                     if (block->walls[LEFT]) { // Left wall
                         RECT leftWall = { left, top, left + WALL_THICKNESS, bottom };
-                        FillRect(hdc, &leftWall, blackBrush);
+                        FillRect(hdcMaze, &leftWall, blackBrush);
                     }
                     if (block->walls[RIGHT]) { // Right wall
                         RECT rightWall = { right - WALL_THICKNESS, top, right, bottom };
-                        FillRect(hdc, &rightWall, blackBrush);
+                        FillRect(hdcMaze, &rightWall, blackBrush);
                     }
 
                     if (block->is_end) {
                         RECT bottomWall = { left, bottom - WALL_THICKNESS, right, bottom };
-                        FillRect(hdc, &bottomWall, redBrush);
+                        FillRect(hdcMaze, &bottomWall, redBrush);
                     }
 
                     if (block->is_start) {
                         RECT leftWall = { left, top, left + WALL_THICKNESS, bottom };
-                        FillRect(hdc, &leftWall, redBrush);
+                        FillRect(hdcMaze, &leftWall, redBrush);
                     }
                 }
             }
         }
 
-        // move robot
-        robot.search();
-
         // Cleanup
         DeleteObject(blackBrush);
         DeleteObject(whiteBrush);
+        DeleteObject(redBrush);
+        ReleaseDC(hwnd, hdc);
+        return 0;
+    }
 
+    case WM_PAINT: {
+        PAINTSTRUCT ps;
+        HDC hdc = BeginPaint(hwnd, &ps);
+        HBRUSH redBrush = CreateSolidBrush(RGB(255, 0, 0));
+
+        // Copy the pre-rendered maze from the off-screen bitmap
+        BitBlt(hdc, 0, 0, windowWidth, windowHeight, hdcMaze, 0, 0, SRCCOPY);
+
+        // Draw the robot's position as a red circle using the RECT coordinates
+        SelectObject(hdc, redBrush);  // Use the red brush to draw the robot
+        Ellipse(hdc, robot.get_rect().left, robot.get_rect().top, robot.get_rect().right, robot.get_rect().bottom);
+
+        DeleteObject(redBrush);
         EndPaint(hwnd, &ps);
         return 0;
     }

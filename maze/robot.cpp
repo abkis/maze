@@ -8,3 +8,10 @@ void Robot::search() {
 	
 	display->display_char();
 }
+
+RECT Robot::get_rect() const {
+	if (curr) {
+		return curr->location;
+	}
+	return RECT();
+}

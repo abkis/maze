@@ -5,6 +5,7 @@
 
 #include <vector>
 #include <memory>
+#include <windows.h>
 
 class Block
 {
@@ -22,6 +23,9 @@ public:
 
 	// has zero to four walls
 	std::vector<bool> walls;
+
+	// location in window
+	RECT location;
 
 	Block(int weight=0, bool U=true, bool D=true, bool L = true, bool R = true);
 

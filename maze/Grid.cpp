@@ -142,7 +142,7 @@ void Grid::remove_walls(unsigned int remove) {
 
 	while (removed < remove && max_it < size) {
 		// get random val to determine which block to look at 
-		int col{ rand() % (width - 1) + 1 }, row{ rand() % (height-1)+1 };
+		int col{ rand() % (width - 2) + 1}, row{ rand() % (height-2)+1 };
 		std::weak_ptr<Block> block = grid[row][col];
 
 		// get random value to determine which wall to remove
