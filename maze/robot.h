@@ -13,10 +13,17 @@ class Robot
 	std::shared_ptr<Display> display; // class for forcing robo display
 
 public:
-	Robot(std::shared_ptr<Block> start, std::shared_ptr<Block> end, std::shared_ptr<Display> display);
+	Robot(const std::shared_ptr<Block>& start, const std::shared_ptr<Block>& end, const std::shared_ptr<Display>& display);
 
 	void search();
 
-	RECT get_rect() const; // return rect obj of location of robot 
+	int get_left() const; // return left obj of location of robot 
+
+	int get_up() const;
+
+	int get_down() const;
+
+	int get_right() const;
+
 };
 

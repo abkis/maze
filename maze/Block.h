@@ -7,6 +7,14 @@
 #include <memory>
 #include <windows.h>
 
+// enumerate directions for easier indexing
+enum DIR {
+	UP = 0,
+	DOWN = 1,
+	LEFT = 2,
+	RIGHT = 3
+};
+
 class Block
 {
 public:
@@ -24,10 +32,10 @@ public:
 	// has zero to four walls
 	std::vector<bool> walls;
 
-	// location in window
-	RECT location;
+	// location in window 
+	int location[4] = { 0,0,0,0 };
 
 	Block(int weight=0, bool U=true, bool D=true, bool L = true, bool R = true);
-
+	void set_location(int left, int right, int top, int bottom);
 };
 

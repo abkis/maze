@@ -1,6 +1,7 @@
 #include "robot.h"
+#include <iostream>
 
-Robot::Robot(std::shared_ptr<Block> start, std::shared_ptr<Block> end, std::shared_ptr<Display> display) :
+Robot::Robot(const std::shared_ptr<Block>& start, const std::shared_ptr<Block>& end, const std::shared_ptr<Display>& display) :
 	curr{ start }, goal{ end }, display{ display } {}
 
 void Robot::search() {
@@ -9,9 +10,18 @@ void Robot::search() {
 	display->display_char();
 }
 
-RECT Robot::get_rect() const {
-	if (curr) {
-		return curr->location;
-	}
-	return RECT();
+int Robot::get_left() const {
+	return curr->location[LEFT];
+}
+
+int Robot::get_right() const {
+	return curr->location[RIGHT];
+}
+
+int Robot::get_up() const {
+	return curr->location[UP];
+}
+
+int Robot::get_down() const {
+	return curr->location[DOWN];
 }

@@ -2,6 +2,7 @@
 #include "grid.h"
 #include <stdexcept>
 #include <stdlib.h>
+#include <iostream>
 
 Grid::Grid(int width, int height, unsigned int max_weight) {
 	if (width <= 0 || height <= 0) {
@@ -124,15 +125,15 @@ void Grid::make_maze(unsigned int end_weight) {
 	end = grid[height-1][width-1];
 
 	// make sure no walls
-	start.lock()->walls[LEFT] = false;
-	start.lock()->is_start = true;
+	start->walls[LEFT] = false;
+	start->is_start = true;
 	// make sure start has no weight
-	start.lock()->weight = 0;
+	start->weight = 0;
 
-	end.lock()->walls[DOWN] = false;
-	end.lock()->is_end = true;
+	end->walls[DOWN] = false;
+	end->is_end = true;
 	// make sure end has specified end weight
-	end.lock()->weight = end_weight;
+	end->weight = end_weight;
 
 }
 
@@ -164,5 +165,5 @@ void Grid::remove_walls(unsigned int remove) {
 	}
 }
 
-std::shared_ptr<Block> Grid::get_start() { return start.lock(); }
-std::shared_ptr<Block> Grid::get_end() { return end.lock(); }
+std::shared_ptr<Block> Grid::get_start() { return start; }
+std::shared_ptr<Block> Grid::get_end() { return end; }

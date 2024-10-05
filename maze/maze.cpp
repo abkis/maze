@@ -18,10 +18,16 @@ HDC hdcMaze = nullptr;
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
+// data to pass to window creation
+struct WindowData {
+    Grid* grid;
+    Robot* robot;
+};
+
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow) {
     // Register the window class
     const wchar_t CLASS_NAME[] = L"GridWindowClass";
-    //CreateConsole();
+    CreateConsole();
     WNDCLASS wc = {};
     wc.lpfnWndProc = WindowProc;
     wc.hInstance = hInstance;
@@ -29,19 +35,36 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 
     RegisterClass(&wc);
 
-    // Create the window
+    // Set up custom grid
+    Grid* grid = new Grid(ROWS, COLS, MAX_WEIGHT);
+    grid->make_maze(END_WEIGHT);
+    grid->remove_walls(REMOVE_WALLS);
+
+    // create display
+    std::shared_ptr<Display> display{ std::make_shared<Display>((HWND)GetForegroundWindow(), CreateSolidBrush(RGB(255, 0, 0))) };
+
+    // create robot
+    Robot* robot = new Robot{ grid->get_start(), grid->get_end(), display };
+
+    // Set up WindowData
+    WindowData* windowData = new WindowData{ grid, robot };
+
+    // Create the window and pass the WindowData pointer via lParam
     HWND hwnd = CreateWindowEx(
         0,
         CLASS_NAME,
         L"Grid Window",
         WS_OVERLAPPEDWINDOW,
         CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
-        nullptr, nullptr, hInstance, nullptr);
+        nullptr, nullptr, hInstance, windowData);  // Pass windowData as lParam
 
     if (hwnd == nullptr) {
+        std::cout << "Oh No" << std::endl;
+        delete grid;
+        delete robot;
+        delete windowData;
         return 0;
     }
-
     ShowWindow(hwnd, nCmdShow);
 
     // Run the message loop
@@ -51,21 +74,17 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
         DispatchMessage(&msg);
     }
 
+    // Clean up
+    delete grid;
+    delete robot;
+    delete windowData;
+
     return 0;
 }
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
-    // Set up custom grid
-    Grid grid = Grid(ROWS, COLS, MAX_WEIGHT);
-    grid.make_maze(END_WEIGHT);
-    grid.remove_walls(REMOVE_WALLS);
-
-    // create display
-    std::shared_ptr<Display> display{ std::make_shared<Display>((HWND)GetForegroundWindow(), CreateSolidBrush(RGB(255, 0, 0))) };
+    static WindowData* windowData = nullptr;
     
-    // create robot
-    Robot robot{ grid.get_start(), grid.get_end(), display};
-
     // Get window dimensions
     RECT clientRect;
     GetClientRect(hwnd, &clientRect);
@@ -76,6 +95,14 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
     case WM_CREATE: {
         HDC hdc = GetDC(hwnd);
+
+        // get info passed from params
+        CREATESTRUCT* pCreate = (CREATESTRUCT*)lParam;
+        windowData = (WindowData*)pCreate->lpCreateParams;
+
+        // Continue with your grid and display setup...
+        Grid* grid = windowData->grid;
+        Robot* robot = windowData->robot;
 
         // Create a memory device context and compatible bitmap for the maze
         hdcMaze = CreateCompatibleDC(hdc);
@@ -98,14 +125,13 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
                 rect.right = rect.left + SQUARE_SIZE;
                 rect.bottom = rect.top + SQUARE_SIZE;
 
-                std::weak_ptr<Block> curr = grid[row][col];
-                curr.lock()->location = rect;
+                std::shared_ptr<Block> block = (*grid)[row][col];
+                block->set_location(rect.left, rect.right, rect.top, rect.bottom);
 
                 // Fill the square with white color
                 FillRect(hdcMaze, &rect, whiteBrush);
 
                 // Draw black lines where there are walls
-                std::shared_ptr<Block> block = curr.lock();
                 if (block) {
                     // shade depending on weight, can't be negative ofc
                     // Convert integer to wide string
@@ -160,16 +186,27 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
     }
 
     case WM_PAINT: {
+        if (windowData == nullptr) {
+            break;  // Ensure windowData is valid before painting
+        }
+
         PAINTSTRUCT ps;
-        HDC hdc = BeginPaint(hwnd, &ps);
         HBRUSH redBrush = CreateSolidBrush(RGB(255, 0, 0));
+        HDC hdc = BeginPaint(hwnd, &ps);
+
+        // Get window dimensions again (if needed)
+        RECT clientRect;
+        GetClientRect(hwnd, &clientRect);
+        int windowWidth = COLS * SQUARE_SIZE;
+        int windowHeight = ROWS * SQUARE_SIZE;
 
         // Copy the pre-rendered maze from the off-screen bitmap
         BitBlt(hdc, 0, 0, windowWidth, windowHeight, hdcMaze, 0, 0, SRCCOPY);
 
-        // Draw the robot's position as a red circle using the RECT coordinates
+        // Draw the robot's position as a red circle
+        Robot* robot = windowData->robot;
         SelectObject(hdc, redBrush);  // Use the red brush to draw the robot
-        Ellipse(hdc, robot.get_rect().left, robot.get_rect().top, robot.get_rect().right, robot.get_rect().bottom);
+        Ellipse(hdc, robot->get_left(), robot->get_up(), robot->get_right(), robot->get_down());
 
         DeleteObject(redBrush);
         EndPaint(hwnd, &ps);
