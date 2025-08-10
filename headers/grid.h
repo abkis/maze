@@ -2,14 +2,7 @@
 #include "block.h"
 #include <vector>
 #include "memory"
-
-// enumerate directions for easier indexing
-enum DIR {
-	UP = 0,
-	DOWN = 1,
-	LEFT = 2,
-	RIGHT = 3
-};
+#include "constants.h"
 
 // grid of blocks
 class Grid
@@ -29,12 +22,18 @@ public:
 	void make_maze(); // randomized depth-first search maze generation algo
 
 	// Overload operator[] to return a reference to grid
-	std::vector<std::shared_ptr<Block>>& operator[](size_t row) {
-		return grid[row];  
+	std::vector<std::shared_ptr<Block>> &operator[](size_t row)
+	{
+		return grid[row];
 	}
 
-	const std::vector<std::shared_ptr<Block>>& operator[](size_t row) const {
-		return grid[row];  
+	const std::vector<std::shared_ptr<Block>> &operator[](size_t row) const
+	{
+		return grid[row];
+	}
+
+	inline const std::shared_ptr<Block> get_block(size_t row, size_t col) const
+	{
+		return grid[row][col];
 	}
 };
-

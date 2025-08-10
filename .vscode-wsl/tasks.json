@@ -1,0 +1,23 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build",
+      "type": "shell",
+      "command": "${workspaceFolder}/.vscode/build.sh",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": ["$gcc"],
+      "args": [/*
+          "main.cpp",
+          "-o",
+          "main",
+          "-lsfml-graphics",
+          "-lsfml-window",
+          "-lsfml-system"*/
+      ],
+    }
+  ]
+}
