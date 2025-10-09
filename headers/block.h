@@ -30,7 +30,7 @@ class Block
 	std::vector<bool> walls;
 
 public:
-	Block(int i, int j, int cost = 1, bool U = true, bool D = true, bool L = true, bool R = true);
+	Block(int i, int j, float cost = 1, bool U = true, bool D = true, bool L = true, bool R = true);
 
 	inline bool wall_up() const { return walls[UP]; };
 	inline bool wall_down() const { return walls[DOWN]; };

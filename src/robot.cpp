@@ -47,20 +47,33 @@ void Robot::traverse_maze()
         auto neighbors = curr.lock()->get_neighbors();
         std::vector<std::pair<size_t, float>> frontier; // hold index of frontier in neighbor list
         // float is goal-seeking cost
-        if (neighbors.size() > 0)
+        std::pair<size_t, float> max_goal_cost{0, std::numeric_limits<float>::min()};
+        bool frontier_found{false};
+        size_t i = 0;
+        for (auto &nbr : neighbors)
         {
-            size_t i = 0;
-            for (auto &nbr : neighbors)
+            if (nbr.lock()->was_seen())
             {
-                if (nbr.lock()->was_seen())
-                {
-                    // block was already visited so not frontier
-                    continue;
-                }
-                // block not yet visited so frontier
-                frontier.push_back({i, goal_seeking_cost(nbr, (DIR)i)});
+                // block was already visited so not frontier
                 ++i;
+                continue;
             }
+            // block not yet visited so frontier
+            float new_cost = goal_seeking_cost(nbr, (DIR)i);
+            if (new_cost > max_goal_cost.second)
+            {
+                frontier_found = true;
+                max_goal_cost = {i, new_cost}; // update max goal cost
+            }
+            frontier.push_back({i, new_cost});
+            ++i;
         }
+        // frontiers found, max goal cost determined
+        if (!frontier_found)
+        {
+            // nowhere to move...
+            break;
+        }
+        curr = neighbors.at(max_goal_cost.first);
     }
 }

@@ -9,7 +9,8 @@ int main()
     Grid maze(grid_width, grid_height);
     maze.make_maze();
     // add robot to start
-    Robot robot{maze.get_start()};
+    Robot robot{maze.get_start(), maze.end_coords()};
+    robot.traverse_maze();
 
     sf::RenderWindow window(sf::VideoMode(grid_width * pixels_per_cell, grid_height * pixels_per_cell), "Maze Viewer");
 
