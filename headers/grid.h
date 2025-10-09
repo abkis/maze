@@ -21,6 +21,8 @@ public:
 
 	void make_maze(); // randomized depth-first search maze generation algo
 
+	inline std::weak_ptr<Block> get_start() const { return start; }
+
 	// Overload operator[] to return a reference to grid
 	std::vector<std::shared_ptr<Block>> &operator[](size_t row)
 	{

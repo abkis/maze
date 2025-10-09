@@ -2,12 +2,14 @@
 #include "grid.h"
 #include <memory>
 #include "constants.h"
+#include "robot.h"
 
 int main()
 {
     Grid maze(grid_width, grid_height);
     maze.make_maze();
-    maze.robot_to_start();
+    // add robot to start
+    Robot robot{maze.get_start()};
 
     sf::RenderWindow window(sf::VideoMode(grid_width * pixels_per_cell, grid_height * pixels_per_cell), "Maze Viewer");
 
@@ -44,28 +46,28 @@ int main()
                 sf::Vertex line[2];
 
                 // UP
-                if (block->walls[UP])
+                if (block->wall_up())
                 {
                     line[0] = sf::Vertex(sf::Vector2f(x, y), sf::Color::White);
                     line[1] = sf::Vertex(sf::Vector2f(x + pixels_per_cell, y), sf::Color::White);
                     window.draw(line, 2, sf::Lines);
                 }
                 // DOWN
-                if (block->walls[DOWN])
+                if (block->wall_down())
                 {
                     line[0] = sf::Vertex(sf::Vector2f(x, y + pixels_per_cell), sf::Color::White);
                     line[1] = sf::Vertex(sf::Vector2f(x + pixels_per_cell, y + pixels_per_cell), sf::Color::White);
                     window.draw(line, 2, sf::Lines);
                 }
                 // LEFT
-                if (block->walls[LEFT])
+                if (block->wall_left())
                 {
                     line[0] = sf::Vertex(sf::Vector2f(x, y), sf::Color::White);
                     line[1] = sf::Vertex(sf::Vector2f(x, y + pixels_per_cell), sf::Color::White);
                     window.draw(line, 2, sf::Lines);
                 }
                 // RIGHT
-                if (block->walls[RIGHT])
+                if (block->wall_right())
                 {
                     line[0] = sf::Vertex(sf::Vector2f(x + pixels_per_cell, y), sf::Color::White);
                     line[1] = sf::Vertex(sf::Vector2f(x + pixels_per_cell, y + pixels_per_cell), sf::Color::White);

@@ -21,7 +21,7 @@ Grid::Grid(int width, int height)
 		std::vector<std::shared_ptr<Block>> temp;
 		for (int j = 0; j < width; ++j)
 		{
-			temp.push_back(std::make_shared<Block>()); // defaults to "true" for all walls
+			temp.push_back(std::make_shared<Block>(rand())); // defaults to "true" for all walls, add cost
 		}
 		grid.push_back(temp);
 	}
