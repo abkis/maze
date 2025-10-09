@@ -21,7 +21,7 @@ Grid::Grid(int width, int height)
 		std::vector<std::shared_ptr<Block>> temp;
 		for (int j = 0; j < width; ++j)
 		{
-			temp.push_back(std::make_shared<Block>(rand())); // defaults to "true" for all walls, add cost
+			temp.push_back(std::make_shared<Block>(i, j, rand())); // defaults to "true" for all walls, add cost
 		}
 		grid.push_back(temp);
 	}
@@ -148,4 +148,5 @@ void Grid::make_maze()
 
 	end.lock()->walls[DOWN] = false;
 	end.lock()->is_end = true;
+	end.lock()->is_GR = true;
 }
