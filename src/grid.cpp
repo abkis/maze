@@ -2,6 +2,7 @@
 #include "grid.h"
 #include <stdexcept>
 #include <stdlib.h>
+#include <ctime>
 
 Grid::Grid(int width, int height)
 {
@@ -82,7 +83,8 @@ void Grid::make_maze()
 	std::vector<std::weak_ptr<Block>> stack; // add visited nodes here so can easily backtrack
 
 	// get random values for where to start maze gen
-	int col{rand() % width}, row{rand() % height};
+	std::srand(std::time({})); // seed
+	int col{std::rand() % width}, row{std::rand() % height};
 
 	std::weak_ptr<Block> curr = grid[row][col];
 	curr.lock()->in_maze = true; // mark as seen
@@ -117,7 +119,7 @@ void Grid::make_maze()
 			continue;
 		}
 
-		unsigned int index{rand() % indices.size()}; //  index of next item to add to "seen" stack
+		unsigned int index{std::rand() % indices.size()}; //  index of next item to add to "seen" stack
 
 		// grab next item to add to maze
 		size_t nbr_index = indices[index];
