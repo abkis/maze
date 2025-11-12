@@ -24,7 +24,7 @@ class Block
 	bool is_GR{false}; // set to true if in goal region
 
 	bool seen{false}; // set to true if visited by robot
-	int seen_counter{0};
+	int visited_counter{0};
 
 	// has zero to four walls
 	// up, down, left, right
@@ -46,8 +46,8 @@ public:
 	inline bool block_is_start() const { return is_start; };
 	inline bool block_in_GR() const { return is_GR; };
 	inline float get_cost() const { return cost; };
-	inline int get_seen_counter() const { return seen_counter; };
-	inline void increase_seen_counter() { ++seen_counter; }
+	inline int get_visited_counter() const { return visited_counter; };
+	inline void increase_visited_counter() { ++visited_counter; }
 
 	inline void toggle_maze() { in_maze = !in_maze; };
 	inline void set_start() { is_start = true; };

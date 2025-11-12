@@ -20,3 +20,4 @@ const static float K2 = 0.5;
 
 // weighting constant for seen cells
 const static float SEEN = 100;
+const static float VISITED = 100;

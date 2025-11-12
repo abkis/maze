@@ -35,9 +35,10 @@ float Robot::goal_seeking_cost(const std::weak_ptr<Block> block, DIR direction) 
     float kone = block.lock()->block_in_GR() ? 0 : k1;
     float G_D = N - manhattan(block.lock()->get_coords(), end_coords);
     float C = block.lock()->get_cost();
-    int counter = block.lock()->get_seen_counter();
-    std::cout << "G_D=" << G_D << " C=" << C << " g=" << g << " => cost=" << kone * G_D - k2 * C + g - ((float)counter * SEEN) << std::endl;
-    return kone * G_D - k2 * C + g - ((float)counter * SEEN);
+    bool seen = block.lock()->was_seen();
+    int counter = block.lock()->get_visited_counter();
+    std::cout << "G_D=" << G_D << " C=" << C << " g=" << g << " => cost=" << kone * G_D - k2 * C + g - ((float)counter * VISITED) - (seen ? SEEN : 0) << std::endl;
+    return kone * G_D - k2 * C + g - ((float)counter * VISITED) - (seen ? SEEN : 0);
 }
 
 // traverse maze step by step
@@ -72,7 +73,7 @@ void Robot::walk()
 
         // set as visited
         nbr->set_seen();
-        nbr->increase_seen_counter();
+
         float new_cost = goal_seeking_cost(nbr, (DIR)i);
 
         if (new_cost > max_goal_cost.second)
@@ -88,14 +89,20 @@ void Robot::walk()
     if (!frontier_found)
     {
         // nowhere to move...
-        std::cout << "nowhere to move" << std::endl;
         return;
     }
-    std::cout << "new min " << max_goal_cost.second << " at index " << max_goal_cost.first << std::endl;
+
     auto curr = neighbors.at(max_goal_cost.first);
     location.lock()->set_robot(false);
     location = curr;
+    curr.get()->set_robot(false);
+    curr.get()->increase_visited_counter();
     location.lock()->set_robot(true);
+
+    if (location.lock()->block_is_end())
+    {
+        finished = true;
+    }
 }
 
 // reach end of maze
