@@ -17,3 +17,6 @@ const static int grid_height = 20;
 // weighting constants for grid search
 const static float K1 = 0.5;
 const static float K2 = 0.5;
+
+// weighting constant for seen cells
+const static float SEEN = 100;

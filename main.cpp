@@ -3,6 +3,7 @@
 #include <memory>
 #include "constants.h"
 #include "robot.h"
+#include <iostream>
 
 int main()
 {
@@ -10,10 +11,9 @@ int main()
     maze.make_maze();
     // add robot to start
     Robot robot{maze.get_start(), maze.end_coords()};
-    robot.traverse_maze();
 
     sf::RenderWindow window(sf::VideoMode(grid_width * pixels_per_cell, grid_height * pixels_per_cell), "Maze Viewer");
-
+    int i = 0;
     while (window.isOpen())
     {
         sf::Event event;
@@ -41,6 +41,14 @@ int main()
                     sf::RectangleShape rect(sf::Vector2f(pixels_per_cell, pixels_per_cell));
                     rect.setPosition(x, y);
                     rect.setFillColor(sf::Color(0, 255, 0, 100));
+                    window.draw(rect);
+                }
+                // highlight if seen
+                if (block->was_seen())
+                {
+                    sf::RectangleShape rect(sf::Vector2f(pixels_per_cell, pixels_per_cell));
+                    rect.setPosition(x, y);
+                    rect.setFillColor(sf::Color(255, 0, 0, 100));
                     window.draw(rect);
                 }
 
@@ -78,5 +86,28 @@ int main()
         }
 
         window.display();
+        try
+        {
+            if (i == 2500)
+            {
+                std::cout << " walk " << std::endl;
+                robot.walk();
+                i = 0;
+            }
+            ++i;
+        }
+        catch (const std::runtime_error &e)
+        {
+            std::cout << "Caught specific runtime_error: " << e.what() << std::endl;
+        }
+        catch (const std::exception &e)
+        {
+            // Catch any other std::exception-derived exceptions
+            std::cout << "Caught general std::exception: " << e.what() << std::endl;
+        }
+        catch (...)
+        {
+            std::cout << "Other error" << std::endl;
+        }
     }
 }

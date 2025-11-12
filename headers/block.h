@@ -14,7 +14,7 @@ class Block
 
 	// will have up to four blocks ("nodes") it connects to
 	// ORDER: Up, Down, Left, Right
-	std::vector<std::weak_ptr<Block>> neighbors;
+	std::vector<std::shared_ptr<Block>> neighbors;
 	std::pair<int, int> coords; // coorinate in maze
 
 	bool in_maze{false};  // set to true if maze generation algo has already seen it
@@ -24,6 +24,7 @@ class Block
 	bool is_GR{false}; // set to true if in goal region
 
 	bool seen{false}; // set to true if visited by robot
+	int seen_counter{0};
 
 	// has zero to four walls
 	// up, down, left, right
@@ -45,6 +46,8 @@ public:
 	inline bool block_is_start() const { return is_start; };
 	inline bool block_in_GR() const { return is_GR; };
 	inline float get_cost() const { return cost; };
+	inline int get_seen_counter() const { return seen_counter; };
+	inline void increase_seen_counter() { ++seen_counter; }
 
 	inline void toggle_maze() { in_maze = !in_maze; };
 	inline void set_start() { is_start = true; };
@@ -59,7 +62,7 @@ public:
 
 	inline size_t num_neighbors() const { return neighbors.size(); };
 
-	inline std::vector<std::weak_ptr<Block>> get_neighbors() const { return neighbors; };
+	inline std::vector<std::shared_ptr<Block>> get_neighbors() const { return neighbors; };
 
 	friend class Grid;
 };

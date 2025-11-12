@@ -21,7 +21,7 @@ Grid::Grid(int width, int height)
 		std::vector<std::shared_ptr<Block>> temp;
 		for (int j = 0; j < width; ++j)
 		{
-			temp.push_back(std::make_shared<Block>(i, j, rand())); // defaults to "true" for all walls, add cost
+			temp.push_back(std::make_shared<Block>(i, j, 1)); // defaults to "true" for all walls, add cost
 		}
 		grid.push_back(temp);
 	}
@@ -42,7 +42,7 @@ Grid::Grid(int width, int height)
 				}
 				else
 				{
-					curr->neighbors.push_back(std::weak_ptr<Block>());
+					curr->neighbors.push_back(std::shared_ptr<Block>());
 				}
 
 				if (i + 1 < height)
@@ -51,7 +51,7 @@ Grid::Grid(int width, int height)
 				}
 				else
 				{
-					curr->neighbors.push_back(std::weak_ptr<Block>());
+					curr->neighbors.push_back(std::shared_ptr<Block>());
 				}
 
 				if (j > 0)
@@ -60,7 +60,7 @@ Grid::Grid(int width, int height)
 				}
 				else
 				{
-					curr->neighbors.push_back(std::weak_ptr<Block>());
+					curr->neighbors.push_back(std::shared_ptr<Block>());
 				}
 
 				if (j + 1 < width)
@@ -69,7 +69,7 @@ Grid::Grid(int width, int height)
 				}
 				else
 				{
-					curr->neighbors.push_back(std::weak_ptr<Block>());
+					curr->neighbors.push_back(std::shared_ptr<Block>());
 				}
 			}
 		}
@@ -104,7 +104,7 @@ void Grid::make_maze()
 		for (size_t i = 0; i < curr.lock()->neighbors.size(); ++i)
 		{
 			auto nbr = curr.lock()->neighbors[i];
-			if (nbr.lock() && !nbr.lock()->in_maze)
+			if (nbr && !nbr->in_maze)
 			{
 				// make sure ptr has been assigned/is not expired
 				indices.push_back(i);
@@ -143,10 +143,10 @@ void Grid::make_maze()
 	end = grid[height - 1][width - 1];
 
 	// make sure no walls
-	start.lock()->walls[LEFT] = false;
-	start.lock()->is_start = true;
+	start->walls[LEFT] = false;
+	start->is_start = true;
 
-	end.lock()->walls[DOWN] = false;
-	end.lock()->is_end = true;
-	end.lock()->is_GR = true;
+	end->walls[DOWN] = false;
+	end->is_end = true;
+	end->is_GR = true;
 }

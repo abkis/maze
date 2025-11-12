@@ -1,5 +1,6 @@
 #include "robot.h"
 #include <cmath>
+#include <iostream>
 
 int manhattan(std::pair<int, int> start, std::pair<int, int> end)
 {
@@ -28,13 +29,73 @@ float Robot::goal_seeking_cost(const std::weak_ptr<Block> block, DIR direction) 
     if (location.lock()->wall_at(direction))
     {
         // wall blocking it so cannot reach
-        return std::numeric_limits<float>::min();
+        return std::numeric_limits<int>::min();
     }
     float g = block.lock()->block_in_GR() ? N : 0;
     float kone = block.lock()->block_in_GR() ? 0 : k1;
-    int G_D = N - manhattan(block.lock()->get_coords(), end_coords);
+    float G_D = N - manhattan(block.lock()->get_coords(), end_coords);
     float C = block.lock()->get_cost();
-    return kone * G_D - k2 * C + g;
+    int counter = block.lock()->get_seen_counter();
+    std::cout << "G_D=" << G_D << " C=" << C << " g=" << g << " => cost=" << kone * G_D - k2 * C + g - ((float)counter * SEEN) << std::endl;
+    return kone * G_D - k2 * C + g - ((float)counter * SEEN);
+}
+
+// traverse maze step by step
+void Robot::walk()
+{
+    // get all neighbors of current locataion
+    if (!location.lock())
+    {
+        std::cout << "nothing at location??" << std::endl;
+        return;
+    }
+    auto neighbors = location.lock()->get_neighbors();
+    std::vector<std::pair<size_t, float>> frontier; // hold index of frontier in neighbor list
+    // float is goal-seeking cost
+    std::pair<size_t, int> max_goal_cost{0, -std::numeric_limits<float>::infinity()};
+    bool frontier_found{false};
+    size_t i = 0;
+    for (auto &nbr : neighbors)
+    {
+        if (!nbr)
+        {
+            std::cout << "nullptr" << std::endl;
+            ++i;
+            continue;
+        }
+        if (location.lock()->wall_at(DIR(i)))
+        {
+            std::cout << " wall in this direction so can't go that way" << std::endl;
+            ++i;
+            continue;
+        }
+
+        // set as visited
+        nbr->set_seen();
+        nbr->increase_seen_counter();
+        float new_cost = goal_seeking_cost(nbr, (DIR)i);
+
+        if (new_cost > max_goal_cost.second)
+        {
+            frontier_found = true;
+            max_goal_cost = {i, new_cost}; // update max goal cost
+            std::cout << "frontier at index " << i << " w cost " << new_cost << std::endl;
+        }
+        frontier.push_back({i, new_cost});
+        ++i;
+    }
+    // frontiers found, max goal cost determined
+    if (!frontier_found)
+    {
+        // nowhere to move...
+        std::cout << "nowhere to move" << std::endl;
+        return;
+    }
+    std::cout << "new min " << max_goal_cost.second << " at index " << max_goal_cost.first << std::endl;
+    auto curr = neighbors.at(max_goal_cost.first);
+    location.lock()->set_robot(false);
+    location = curr;
+    location.lock()->set_robot(true);
 }
 
 // reach end of maze
@@ -47,19 +108,30 @@ void Robot::traverse_maze()
         auto neighbors = curr.lock()->get_neighbors();
         std::vector<std::pair<size_t, float>> frontier; // hold index of frontier in neighbor list
         // float is goal-seeking cost
-        std::pair<size_t, float> max_goal_cost{0, std::numeric_limits<float>::min()};
+        std::pair<size_t, float> max_goal_cost{0, -std::numeric_limits<float>::infinity()};
         bool frontier_found{false};
         size_t i = 0;
         for (auto &nbr : neighbors)
         {
-            if (nbr.lock()->was_seen())
+            if (!nbr)
+            {
+                std::cout << "nullptr" << std::endl;
+                ++i;
+                continue;
+            }
+
+            if (nbr->was_seen())
             {
                 // block was already visited so not frontier
+                std::cout << "seen" << std::endl;
                 ++i;
                 continue;
             }
             // block not yet visited so frontier
+            // set as visited
+            nbr->set_seen();
             float new_cost = goal_seeking_cost(nbr, (DIR)i);
+
             if (new_cost > max_goal_cost.second)
             {
                 frontier_found = true;
@@ -72,8 +144,10 @@ void Robot::traverse_maze()
         if (!frontier_found)
         {
             // nowhere to move...
+            std::cout << "nowhere to move" << std::endl;
             break;
         }
+        std::cout << "new min " << max_goal_cost.second << " at index " << i << std::endl;
         curr = neighbors.at(max_goal_cost.first);
     }
 }
