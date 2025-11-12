@@ -10,22 +10,28 @@
 class Block
 {
 	bool robot_location = false;
-	int cost{1};
+	float cost{1};
 
 	// will have up to four blocks ("nodes") it connects to
 	// ORDER: Up, Down, Left, Right
-	std::vector<std::weak_ptr<Block>> neighbors;
+	std::vector<std::shared_ptr<Block>> neighbors;
+	std::pair<int, int> coords; // coorinate in maze
 
 	bool in_maze{false};  // set to true if maze generation algo has already seen it
 	bool is_end{false};	  // set to true => final spot
 	bool is_start{false}; // set to true => maze  start
+
+	bool is_GR{false}; // set to true if in goal region
+
+	bool seen{false}; // set to true if visited by robot
+	int visited_counter{0};
 
 	// has zero to four walls
 	// up, down, left, right
 	std::vector<bool> walls;
 
 public:
-	Block(int cost = 1, bool U = true, bool D = true, bool L = true, bool R = true);
+	Block(int i, int j, float cost = 1, bool U = true, bool D = true, bool L = true, bool R = true);
 
 	inline bool wall_up() const { return walls[UP]; };
 	inline bool wall_down() const { return walls[DOWN]; };
@@ -38,14 +44,25 @@ public:
 	inline bool block_in_maze() const { return in_maze; };
 	inline bool block_is_end() const { return is_end; };
 	inline bool block_is_start() const { return is_start; };
+	inline bool block_in_GR() const { return is_GR; };
+	inline float get_cost() const { return cost; };
+	inline int get_visited_counter() const { return visited_counter; };
+	inline void increase_visited_counter() { ++visited_counter; }
 
 	inline void toggle_maze() { in_maze = !in_maze; };
 	inline void set_start() { is_start = true; };
 	inline void set_end() { is_end = true; };
+	inline void set_GR() { is_GR = true; };
+
+	inline bool wall_at(DIR dir) const { return walls[dir]; };
+
+	inline void set_seen() { seen = true; };
+	inline bool was_seen() const { return seen; };
+	inline std::pair<int, int> get_coords() const { return coords; }
 
 	inline size_t num_neighbors() const { return neighbors.size(); };
 
-	inline std::vector<std::weak_ptr<Block>> get_neighbors() const { return neighbors; };
+	inline std::vector<std::shared_ptr<Block>> get_neighbors() const { return neighbors; };
 
 	friend class Grid;
 };

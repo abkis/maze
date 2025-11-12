@@ -10,7 +10,7 @@ class Grid
 	// width == columns, height == rows
 	int width, height, size;
 
-	std::weak_ptr<Block> start, end; // track where to enter/exit maze
+	std::shared_ptr<Block> start, end; // track where to enter/exit maze
 
 	// use vector of block vectors to mimick array
 	// hold series of block object pointers that make up grid
@@ -21,7 +21,8 @@ public:
 
 	void make_maze(); // randomized depth-first search maze generation algo
 
-	inline std::weak_ptr<Block> get_start() const { return start; }
+	inline std::shared_ptr<Block> get_start() const { return start; };
+	inline std::pair<int, int> end_coords() const { return end->get_coords(); };
 
 	// Overload operator[] to return a reference to grid
 	std::vector<std::shared_ptr<Block>> &operator[](size_t row)
